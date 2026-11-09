@@ -31,6 +31,7 @@ bmenv\Scripts\python evaluate.py --compare runs/<a> runs/<b> --split test
 - `models.py`: `BaselineCNN`, ResNet-50 / EfficientNet-B0 builders, `set_trainable`, `freeze_bn_stats`, `param_groups`.
 - `engine.py`: losses (incl. `FocalLoss`), optimizer and LR schedule, train/eval loops, `fit()` (early stopping + checkpoints), `benchmark()`.
 - `metrics.py`: `compute_metrics` (macro-F1 primary) and the plots.
+- `cli.py`: `run_and_exit(main)`. Entry scripts end through it because torch 2.14 + Python 3.15 on Windows segfaults (exit 139) at interpreter shutdown after any CUDA conv work. It uses `os._exit` after flushing, so exit codes stay meaningful (0 ok, 1 error).
 - `config.py`: the `TrainConfig` dataclass (every tunable field) and typed YAML/`--set` loading.
 - `train.py` / `tune.py` / `evaluate.py`: the command-line entry points.
 - `class_distribution.py`: EDA chart and counts.

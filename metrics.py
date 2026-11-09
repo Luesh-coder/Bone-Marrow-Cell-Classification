@@ -144,8 +144,11 @@ def plot_history(history, path):
     a2.plot(ep, [h["val_balanced_acc"] for h in history], color=SERIES["extra"], lw=2, marker="o", ms=4,
             label="val balanced acc")
     best = int(np.argmax([h["val_macro_f1"] for h in history]))
-    a2.annotate(f"best {history[best]['val_macro_f1']:.3f}", (ep[best], history[best]["val_macro_f1"]),
-                textcoords="offset points", xytext=(0, 8), ha="center", fontsize=8, color=INK)
+    # Ring the best epoch and label it below the line (balanced acc usually runs above)
+    a2.plot(ep[best], history[best]["val_macro_f1"], "o", ms=10, mfc="none", mec=INK, mew=1.2)
+    a2.annotate(f"best macro-F1 {history[best]['val_macro_f1']:.3f} (epoch {ep[best]})",
+                (ep[best], history[best]["val_macro_f1"]), textcoords="offset points", xytext=(0, -16),
+                ha="center", va="top", fontsize=8, color=INK)
     a2.set_title("Validation scores", loc="left", fontsize=11, color=INK)
     a2.set_xlabel("Epoch", color=INK)
     a2.set_ylim(0, 1)

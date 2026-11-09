@@ -94,6 +94,7 @@ Early stopping usually ends runs sooner. Re-measure with `python train.py --conf
 
 - **Why there's a custom loader (`loader.py`) instead of torch's DataLoader.** On this setup (Windows, torch 2.14, Python 3.15), every DataLoader worker imports torch and its CUDA DLLs, about 1 GB of commit memory each. A full run died with `MemoryError` at epoch 6 once other programs took their share. Workers that returned torch tensors also crashed. The loader's workers import only numpy, PIL and `datasets` (~0.15 GB each) and return uint8 numpy batches. The GPU does the normalization (`preprocess.normalize`), and uint8 is 4× less data to pass between processes.
 - **`MemoryError` or `[warn] training needs ~N GB of commit memory`.** RAM plus page file is nearly used up. Close other programs, lower `num_workers`, or enlarge the Windows page file (currently fixed at 16 GB).
+- **Exit code 139 (segfault) after a run finishes.** This torch build crashes during Python shutdown once CUDA convolutions have run, after all outputs are written. The scripts avoid it by ending through `cli.run_and_exit`, so they exit with 0 on success and 1 on error. Your own scripts that train models may still show 139 at exit; their results are fine.
 - **Entry scripts keep heavy imports inside functions.** On Windows every worker process re-runs the main script's top level, so a top-level `import torch` would cost ~1 GB per worker again. If that happens, the workers print a `[warn]`.
 
 ## Notes

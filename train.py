@@ -27,6 +27,7 @@ from pathlib import Path
 
 # Heavy imports (torch, engine, data, ...) live inside functions: on Windows every
 # loader worker process re-runs this file's top level, and torch alone costs ~1 GB each.
+from cli import run_and_exit
 from config import load_config
 
 
@@ -66,4 +67,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    run_and_exit(main)   # avoids a segfault at interpreter exit (see cli.py)
