@@ -1,0 +1,28 @@
+# ImageNet-pretrained EfficientNet-B0: lighter fallback (proposal slides 8, 13).
+# Pretrained layers train at lr * backbone_lr_mult; the new 21-class head at lr.
+# python train.py --config configs/efficientnet_b0.yaml
+name: efficientnet_b0
+model: efficientnet_b0
+pretrained: true
+unfreeze: all            # head | last_block | all
+dropout: 0.3
+
+image_size: 224
+aug: medium
+
+epochs: 20
+patience: 4
+batch_size: 64
+optimizer: adamw
+lr: 3.0e-4
+backbone_lr_mult: 0.1
+weight_decay: 1.0e-4
+scheduler: cosine
+warmup_epochs: 1.0
+
+loss: weighted_ce
+class_weight_scheme: inv_sqrt
+sampler: none
+
+num_workers: 12
+seed: 42

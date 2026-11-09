@@ -1,0 +1,25 @@
+# Baseline CNN trained from scratch (proposal slide 8).
+# python train.py --config configs/baseline.yaml
+name: baseline
+model: baseline
+pretrained: false
+dropout: 0.3
+
+image_size: 224
+aug: medium
+
+epochs: 30
+patience: 5
+batch_size: 64
+optimizer: adamw
+lr: 1.0e-3
+weight_decay: 1.0e-4
+scheduler: cosine
+warmup_epochs: 1.0
+
+loss: weighted_ce
+class_weight_scheme: inv_sqrt
+sampler: none
+
+num_workers: 12
+seed: 42
