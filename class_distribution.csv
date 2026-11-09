@@ -1,0 +1,22 @@
+,name,train,validation,test,total
+NGS,Segmented neutrophil,23539,2943,2942,29424
+EBO,Erythroblast,21916,2740,2739,27395
+LYT,Lymphocyte,20993,2625,2624,26242
+ART,Artefact,15704,1963,1963,19630
+PMO,Promyelocyte,9595,1200,1199,11994
+BLA,Blast,9578,1198,1197,11973
+NGB,Band neutrophil,7974,997,997,9968
+PLM,Plasma cell,6103,763,763,7629
+MYB,Myelocyte,5245,656,656,6557
+EOS,Eosinophil,4706,589,588,5883
+MON,Monocyte,3232,404,404,4040
+NIF,Not identifiable,2830,354,354,3538
+MMZ,Metamyelocyte,2444,306,305,3055
+PEB,Proerythroblast,2192,274,274,2740
+BAS,Basophil,352,45,44,441
+HAC,Hairy cell,327,41,41,409
+OTH,Other cell,235,30,29,294
+LYI,Immature lymphocyte,52,7,6,65
+FGC,Faggot cell,37,5,5,47
+KSC,Smudge cell,33,5,4,42
+ABE,Abnormal eosinophil,6,1,1,8
