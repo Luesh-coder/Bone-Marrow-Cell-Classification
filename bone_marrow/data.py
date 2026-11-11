@@ -22,8 +22,8 @@ import numpy as np
 import torch
 from datasets import DatasetDict, load_dataset
 
-from loader import BatchLoader, WeightedSampler, collate  # noqa: F401  (collate re-exported)
-from preprocess import REPO_ID, with_preprocessing
+from .loader import BatchLoader, WeightedSampler, collate  # noqa: F401  (collate re-exported)
+from .preprocess import REPO_ID, with_preprocessing
 
 # Label order of the dataset (index -> abbreviation), as in the dataset card
 CLASS_CODES = [
@@ -33,7 +33,7 @@ CLASS_CODES = [
 
 SMOKE_SIZES = {"train": 2000, "validation": 1000, "test": 1000}
 
-# Images that cannot be decoded, excluded from every run. Found by check_images.py
+# Images that cannot be decoded, excluded from every run. Found by tools/check_images.py
 # (2026-11-09): train row 83795 (MYB) raises "broken data stream" in PIL. Its bytes
 # are identical in the Hugging Face source (train-00007-of-00012.parquet), so the
 # dataset itself is corrupt there, not the local cache. Validation and test are clean.

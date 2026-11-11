@@ -1,5 +1,5 @@
 # Baseline CNN trained from scratch (proposal slide 8).
-# python train.py --config configs/baseline.yaml
+# python scripts/train.py --config configs/baseline.yaml
 name: baseline
 model: baseline
 pretrained: false

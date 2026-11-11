@@ -15,7 +15,7 @@ Install:
     pip install huggingface_hub pyarrow pandas matplotlib datasets
 
 Run:
-    python class_distribution.py
+    python tools/class_distribution.py
 """
 
 from pathlib import PurePosixPath
