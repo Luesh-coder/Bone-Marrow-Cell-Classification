@@ -1,0 +1,39 @@
+# resnet50test7: focal loss, gamma 2
+# Tuning Plan A7 in results/resnet50_results.xlsx (priority: 2).
+#
+# Same as resnet50test1 except:
+#   loss: weighted_ce -> focal
+#
+# Why:  Focal loss down-weights easy examples, so training concentrates on hard ones such
+#       as the PMO/MYB/MMZ/NGB/NGS maturation-stage confusions, not only on rare classes.
+# Note: Keeps the inv_sqrt class weights as the focal alpha. Test 8 is the same with gamma
+#       1.
+# Compare its validation macro-F1 with test 1, not with the untuned run.
+#
+# bmenv\Scripts\python scripts/train.py --config configs/resnet50test7.yaml
+name: resnet50test7
+model: resnet50
+pretrained: true
+unfreeze: all            # head | last_block | all
+dropout: 0.3
+
+image_size: 224
+aug: medium
+
+epochs: 12               # from test 1 (was 20 in resnet50.yaml)
+patience: 12             # from test 1 (was 4 in resnet50.yaml)
+batch_size: 64
+optimizer: adamw
+lr: 3.0e-4
+backbone_lr_mult: 0.1
+weight_decay: 1.0e-4
+scheduler: cosine
+warmup_epochs: 1.0
+
+loss: focal              # CHANGED (was weighted_ce)
+class_weight_scheme: inv_sqrt  # used as the focal alpha
+focal_gamma: 2.0         # default, stated explicitly; test 8 uses 1.0
+sampler: none
+
+num_workers: 6           # from test 1 (was 12 in resnet50.yaml)
+seed: 42

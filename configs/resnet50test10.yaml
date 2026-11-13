@@ -1,0 +1,37 @@
+# resnet50test10: native resolution (250 px)
+# Tuning Plan A9 in results/resnet50_results.xlsx (priority: 3).
+#
+# Same as resnet50test1 except:
+#   image_size: 224 -> 250
+#
+# Why:  Source images are 250 x 250. At 250 px nothing is resampled, which keeps the fine
+#       nuclear and granule detail that separates neighbouring maturation stages.
+# Note: About 25% slower per epoch than 224 px.
+# Compare its validation macro-F1 with test 1, not with the untuned run.
+#
+# bmenv\Scripts\python scripts/train.py --config configs/resnet50test10.yaml
+name: resnet50test10
+model: resnet50
+pretrained: true
+unfreeze: all            # head | last_block | all
+dropout: 0.3
+
+image_size: 250          # CHANGED (was 224)
+aug: medium
+
+epochs: 12               # from test 1 (was 20 in resnet50.yaml)
+patience: 12             # from test 1 (was 4 in resnet50.yaml)
+batch_size: 64
+optimizer: adamw
+lr: 3.0e-4
+backbone_lr_mult: 0.1
+weight_decay: 1.0e-4
+scheduler: cosine
+warmup_epochs: 1.0
+
+loss: weighted_ce
+class_weight_scheme: inv_sqrt
+sampler: none
+
+num_workers: 6           # from test 1 (was 12 in resnet50.yaml)
+seed: 42

@@ -1,0 +1,40 @@
+# resnet50test15: merge ABE into EOS (20 classes)
+# Tuning Plan C5 in results/resnet50_results.xlsx (priority: report).
+#
+# Same as resnet50test1 except:
+#   merge: {} -> {ABE: EOS}
+#
+# Why:  Proposal slide 9, option 4. ABE (abnormal eosinophil) has 6 train images and 1
+#       validation image, which the untuned model predicts as EOS; its F1 of 0 costs
+#       ~0.036 macro-F1.
+# Note: This changes the metric itself (20 classes instead of 21), so report it as a
+#       separate result, never as a tuning gain over the 21-class runs.
+# Compare its validation macro-F1 with test 1, not with the untuned run.
+#
+# bmenv\Scripts\python scripts/train.py --config configs/resnet50test15.yaml
+name: resnet50test15
+model: resnet50
+pretrained: true
+unfreeze: all            # head | last_block | all
+dropout: 0.3
+
+image_size: 224
+aug: medium
+
+epochs: 12               # from test 1 (was 20 in resnet50.yaml)
+patience: 12             # from test 1 (was 4 in resnet50.yaml)
+batch_size: 64
+optimizer: adamw
+lr: 3.0e-4
+backbone_lr_mult: 0.1
+weight_decay: 1.0e-4
+scheduler: cosine
+warmup_epochs: 1.0
+
+loss: weighted_ce
+class_weight_scheme: inv_sqrt
+sampler: none
+merge: {ABE: EOS}        # CHANGED (was {})
+
+num_workers: 6           # from test 1 (was 12 in resnet50.yaml)
+seed: 42

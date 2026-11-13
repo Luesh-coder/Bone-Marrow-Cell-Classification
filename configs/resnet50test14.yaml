@@ -1,0 +1,38 @@
+# resnet50test14: SGD with momentum
+# Tuning Plan C4 in results/resnet50_results.xlsx (priority: report).
+#
+# Same as resnet50test1 except:
+#   optimizer: adamw -> sgd
+#   lr: 3.0e-4 -> 1.0e-2
+#
+# Why:  Report ablation (proposal slide 10, optimizer). SGD needs a larger LR than AdamW:
+#       head 1e-2, backbone 1e-3 (backbone_lr_mult 0.1). Momentum 0.9 (Nesterov) is built
+#       in.
+# Compare its validation macro-F1 with test 1, not with the untuned run.
+#
+# bmenv\Scripts\python scripts/train.py --config configs/resnet50test14.yaml
+name: resnet50test14
+model: resnet50
+pretrained: true
+unfreeze: all            # head | last_block | all
+dropout: 0.3
+
+image_size: 224
+aug: medium
+
+epochs: 12               # from test 1 (was 20 in resnet50.yaml)
+patience: 12             # from test 1 (was 4 in resnet50.yaml)
+batch_size: 64
+optimizer: sgd           # CHANGED (was adamw)
+lr: 1.0e-2               # CHANGED (was 3.0e-4)
+backbone_lr_mult: 0.1    # backbone LR = 1e-3
+weight_decay: 1.0e-4
+scheduler: cosine
+warmup_epochs: 1.0
+
+loss: weighted_ce
+class_weight_scheme: inv_sqrt
+sampler: none
+
+num_workers: 6           # from test 1 (was 12 in resnet50.yaml)
+seed: 42
