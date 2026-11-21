@@ -1,0 +1,38 @@
+# resnet50test3: no class weights (plain cross-entropy)
+# Tuning Plan A3 in results/resnet50_results.xlsx (priority: 1).
+#
+# Same as resnet50test1 except:
+#   loss: weighted_ce -> ce
+#
+# Why:  Recall > precision in 14 of 21 classes (mean precision 0.71 vs mean recall 0.76):
+#       the inv_sqrt weights pull predictions toward small classes, and macro-F1 needs
+#       both.
+# Note: With loss: ce, class_weight_scheme is ignored.
+# Compare its validation macro-F1 with test 1, not with the untuned run.
+#
+# bmenv\Scripts\python scripts/train.py --config configs/resnet50test3.yaml
+name: resnet50test3
+model: resnet50
+pretrained: true
+unfreeze: all            # head | last_block | all
+dropout: 0.3
+
+image_size: 224
+aug: medium
+
+epochs: 12               # from test 1 (was 20 in resnet50.yaml)
+patience: 12             # from test 1 (was 4 in resnet50.yaml)
+batch_size: 64
+optimizer: adamw
+lr: 3.0e-4
+backbone_lr_mult: 0.1
+weight_decay: 1.0e-4
+scheduler: cosine
+warmup_epochs: 1.0
+
+loss: ce                 # CHANGED (was weighted_ce)
+class_weight_scheme: inv_sqrt  # ignored with loss: ce
+sampler: none
+
+num_workers: 6           # from test 1 (was 12 in resnet50.yaml)
+seed: 42

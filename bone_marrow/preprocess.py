@@ -36,7 +36,7 @@ Each example becomes:
     label          int class index (0-20, or fewer if classes are merged/dropped)
 
 Use from a training script (data.py does this for you):
-    from preprocess import load_preprocessed
+    from bone_marrow.preprocess import load_preprocessed
     ds = load_preprocessed()
     x, y = ds["train"][0]["pixel_values"], ds["train"][0]["label"]
 
@@ -44,7 +44,7 @@ Install:
     pip install datasets pillow numpy
 
 Run (downloads the dataset once, then prints sanity checks):
-    python preprocess.py
+    python -m bone_marrow.preprocess
 """
 
 import random

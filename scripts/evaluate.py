@@ -2,13 +2,13 @@
 Evaluate a trained model (proposal slide 11), and compare runs.
 
     # Any time, on validation
-    python evaluate.py --checkpoint runs/<run>/best.pt --split validation
+    python scripts/evaluate.py --checkpoint runs/<run>/best.pt --split validation
 
     # ONCE per final model, on the held-out test set
-    python evaluate.py --checkpoint runs/<run>/best.pt --split test
+    python scripts/evaluate.py --checkpoint runs/<run>/best.pt --split test
 
     # Side-by-side table, e.g. baseline vs ResNet-50
-    python evaluate.py --compare runs/<baseline_run> runs/<resnet_run> --split test
+    python scripts/evaluate.py --compare runs/<baseline_run> runs/<resnet_run> --split test
 
 Writes runs/<run>/eval_<split>/: metrics.json, per_class.csv, confusion_matrix.png
 and predictions.npz (probabilities + labels, for ROC curves or error analysis).
@@ -20,22 +20,28 @@ checkpoint is refused unless --force is given.
 
 import argparse
 import json
+import sys
 from datetime import datetime
 from pathlib import Path
 
+# `python scripts/evaluate.py` puts scripts/ on sys.path, not the repo root, so add the
+# root to make the bone_marrow package importable (loader workers inherit sys.path).
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
 # Heavy imports (torch, engine, data, ...) live inside functions: on Windows every
 # loader worker process re-runs this file's top level, and torch alone costs ~1 GB each.
-from config import TrainConfig
+from bone_marrow.cli import run_and_exit
+from bone_marrow.config import TrainConfig
 
 
 def run_eval(checkpoint, split, force=False, batch_size=128, num_workers=8, smoke=False):
     import numpy as np
     import torch
 
-    from data import build_data, check_worker_memory, make_loader
-    from engine import evaluate, get_device
-    from metrics import compute_metrics, save_metrics, summary_line
-    from models import build_model
+    from bone_marrow.data import build_data, check_worker_memory, make_loader
+    from bone_marrow.engine import evaluate, get_device
+    from bone_marrow.metrics import compute_metrics, save_metrics, summary_line
+    from bone_marrow.models import build_model
 
     checkpoint = Path(checkpoint)
     run_dir = checkpoint.parent
@@ -87,7 +93,7 @@ def compare(run_dirs, split):
         if not path.exists() and split == "validation":
             path = rd / "val_metrics.json"
         if not path.exists():
-            print(f"[skip] {rd}: no {split} metrics (run evaluate.py --split {split} first)")
+            print(f"[skip] {rd}: no {split} metrics (run scripts/evaluate.py --split {split} first)")
             continue
         m = json.loads(path.read_text())
         name = rd.name
@@ -127,4 +133,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    run_and_exit(main)   # avoids a segfault at interpreter exit (see cli.py)

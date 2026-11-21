@@ -1,6 +1,6 @@
 # ImageNet-pretrained EfficientNet-B0: lighter fallback (proposal slides 8, 13).
 # Pretrained layers train at lr * backbone_lr_mult; the new 21-class head at lr.
-# python train.py --config configs/efficientnet_b0.yaml
+# python scripts/train.py --config configs/efficientnet_b0.yaml
 name: efficientnet_b0
 model: efficientnet_b0
 pretrained: true

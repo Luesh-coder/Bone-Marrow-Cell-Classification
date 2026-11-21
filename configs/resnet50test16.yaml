@@ -1,0 +1,38 @@
+# resnet50test16: smaller batch (32)
+# Tuning Plan C6 in results/resnet50_results.xlsx (priority: 3).
+#
+# Same as resnet50test1 except:
+#   batch_size: 64 -> 32
+#   lr: 3.0e-4 -> 1.5e-4
+#
+# Why:  Proposal slide 10, batch size. The LR is halved along with the batch size (linear
+#       scaling) so the per-image step stays the same. Small expected effect and slower
+#       per epoch; run it only if time remains.
+# Compare its validation macro-F1 with test 1, not with the untuned run.
+#
+# bmenv\Scripts\python scripts/train.py --config configs/resnet50test16.yaml
+name: resnet50test16
+model: resnet50
+pretrained: true
+unfreeze: all            # head | last_block | all
+dropout: 0.3
+
+image_size: 224
+aug: medium
+
+epochs: 12               # from test 1 (was 20 in resnet50.yaml)
+patience: 12             # from test 1 (was 4 in resnet50.yaml)
+batch_size: 32           # CHANGED (was 64)
+optimizer: adamw
+lr: 1.5e-4               # CHANGED (was 3.0e-4)
+backbone_lr_mult: 0.1
+weight_decay: 1.0e-4
+scheduler: cosine
+warmup_epochs: 1.0
+
+loss: weighted_ce
+class_weight_scheme: inv_sqrt
+sampler: none
+
+num_workers: 6           # from test 1 (was 12 in resnet50.yaml)
+seed: 42

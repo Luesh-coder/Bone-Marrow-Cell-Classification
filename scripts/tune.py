@@ -6,15 +6,15 @@ only for the top 2-3 configurations, everything chosen by validation macro-F1.
 The test set is never used here.
 
     # 1. Random search: 30 new trials, 8 epochs each, on 20% of train
-    python tune.py search --model resnet50 --trials 30
-    python tune.py search --model baseline --trials 30 --study baseline_search
+    python scripts/tune.py search --model resnet50 --trials 30
+    python scripts/tune.py search --model baseline --trials 30 --study baseline_search
 
     # 2. Rank trials, export a CSV, write the top-k as full-run configs
-    python tune.py top --study resnet50_search --k 3
+    python scripts/tune.py top --study resnet50_search --k 3
 
     # 3. Train the top-k configs on the full training set
-    python tune.py full --study resnet50_search --k 3
-    #    (or run them one by one: python train.py --config configs/tuned/resnet50_search_rank1.yaml)
+    python scripts/tune.py full --study resnet50_search --k 3
+    #    (or run them one by one: python scripts/train.py --config configs/tuned/resnet50_search_rank1.yaml)
 
 Search space (slide 10 plus the imbalance options of slide 9):
     lr               1e-4 .. 1e-2 (log)        batch_size     32, 64
@@ -31,11 +31,17 @@ runs/tuning/<study>.db, so an interrupted search resumes when re-run with the sa
 """
 
 import argparse
+import sys
 from pathlib import Path
+
+# `python scripts/tune.py` puts scripts/ on sys.path, not the repo root, so add the
+# root to make the bone_marrow package importable (loader workers inherit sys.path).
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 # Heavy imports (torch, engine, data, ...) live inside functions: on Windows every
 # loader worker process re-runs this file's top level, and torch alone costs ~1 GB each.
-from config import TrainConfig, load_config
+from bone_marrow.cli import run_and_exit
+from bone_marrow.config import TrainConfig, load_config
 
 TUNING_DIR = Path("runs/tuning")
 TUNED_CONFIG_DIR = Path("configs/tuned")
@@ -76,7 +82,7 @@ def cmd_search(args):
     import optuna
     import torch
 
-    from engine import fit
+    from bone_marrow.engine import fit
 
     study_name = args.study or f"{args.model}_search"
     base = load_config(args.base_config or f"configs/{args.model}.yaml", args.set)
@@ -125,7 +131,7 @@ def cmd_search(args):
     if completed:
         print(f"Best so far: trial {study.best_trial.number}, val macro-F1 {study.best_value:.4f}")
         print(f"  {study.best_trial.params}")
-    print(f"Next: python tune.py top --study {study_name} --k 3")
+    print(f"Next: python scripts/tune.py top --study {study_name} --k 3")
 
 
 def cmd_top(args):
@@ -168,11 +174,11 @@ def cmd_top(args):
 
 
 def cmd_full(args):
-    from engine import fit
+    from bone_marrow.engine import fit
 
     paths = sorted(TUNED_CONFIG_DIR.glob(f"{args.study}_rank*.yaml"))[:args.k]
     if not paths:
-        raise SystemExit(f"no configs/tuned/{args.study}_rank*.yaml; run `tune.py top` first")
+        raise SystemExit(f"no configs/tuned/{args.study}_rank*.yaml; run `python scripts/tune.py top` first")
     results = []
     for path in paths:
         cfg = load_config(path, args.set)
@@ -182,7 +188,7 @@ def cmd_full(args):
     print("\nFull runs (validation macro-F1):")
     for name, res in sorted(results, key=lambda r: r[1].best_val_macro_f1, reverse=True):
         print(f"  {name:<32} {res.best_val_macro_f1:.4f}  (epoch {res.best_epoch})  {res.run_dir}")
-    print("Evaluate the winner ONCE on test: python evaluate.py --checkpoint <run>/best.pt --split test")
+    print("Evaluate the winner ONCE on test: python scripts/evaluate.py --checkpoint <run>/best.pt --split test")
 
 
 def main():
@@ -222,4 +228,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    run_and_exit(main)   # avoids a segfault at interpreter exit (see cli.py)

@@ -1,0 +1,36 @@
+# resnet50test11: head only (frozen backbone)
+# Tuning Plan C1 in results/resnet50_results.xlsx (priority: report).
+#
+# Same as resnet50test1 except:
+#   unfreeze: all -> head
+#
+# Why:  Report ablation (proposal slide 10, unfrozen layers). Expected to lose clearly; it
+#       measures what fine-tuning adds over frozen ImageNet features.
+# Compare its validation macro-F1 with test 1, not with the untuned run.
+#
+# bmenv\Scripts\python scripts/train.py --config configs/resnet50test11.yaml
+name: resnet50test11
+model: resnet50
+pretrained: true
+unfreeze: head           # CHANGED (was all)
+dropout: 0.3
+
+image_size: 224
+aug: medium
+
+epochs: 12               # from test 1 (was 20 in resnet50.yaml)
+patience: 12             # from test 1 (was 4 in resnet50.yaml)
+batch_size: 64
+optimizer: adamw
+lr: 3.0e-4
+backbone_lr_mult: 0.1    # unused: the backbone is frozen
+weight_decay: 1.0e-4
+scheduler: cosine
+warmup_epochs: 1.0
+
+loss: weighted_ce
+class_weight_scheme: inv_sqrt
+sampler: none
+
+num_workers: 6           # from test 1 (was 12 in resnet50.yaml)
+seed: 42

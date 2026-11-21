@@ -1,0 +1,39 @@
+# resnet50test2: label smoothing 0.1
+# Tuning Plan A2 in results/resnet50_results.xlsx (priority: 1).
+#
+# Same as resnet50test1 except:
+#   label_smoothing: 0.0 -> 0.1
+#
+# Why:  Val loss rose after epoch 7 (0.434 -> 0.466) while macro-F1 stayed flat: the model
+#       got more confident, not more accurate. Smoothing also suits the ambiguous
+#       boundaries between neighbouring maturation stages (a third of all errors).
+# Note: label_smoothing only affects cross-entropy losses (focal loss ignores it).
+# Compare its validation macro-F1 with test 1, not with the untuned run.
+#
+# bmenv\Scripts\python scripts/train.py --config configs/resnet50test2.yaml
+name: resnet50test2
+model: resnet50
+pretrained: true
+unfreeze: all            # head | last_block | all
+dropout: 0.3
+
+image_size: 224
+aug: medium
+
+epochs: 12               # from test 1 (was 20 in resnet50.yaml)
+patience: 12             # from test 1 (was 4 in resnet50.yaml)
+batch_size: 64
+optimizer: adamw
+lr: 3.0e-4
+backbone_lr_mult: 0.1
+weight_decay: 1.0e-4
+scheduler: cosine
+warmup_epochs: 1.0
+
+loss: weighted_ce
+class_weight_scheme: inv_sqrt
+label_smoothing: 0.1     # CHANGED (was 0.0)
+sampler: none
+
+num_workers: 6           # from test 1 (was 12 in resnet50.yaml)
+seed: 42

@@ -15,6 +15,9 @@ Fine-tuning helpers:
     param_groups(...)                      head at lr, pretrained layers at
                                            lr * backbone_lr_mult; no weight decay on
                                            biases and BatchNorm
+
+Run from the repo root (parameter counts and output shapes, no weights download):
+    python -m bone_marrow.models
 """
 
 import torch
@@ -140,7 +143,7 @@ def count_params(model):
 
 
 if __name__ == "__main__":
-    from config import TrainConfig
+    from .config import TrainConfig
 
     for arch in ("baseline", "resnet50", "efficientnet_b0"):
         m = build_model(TrainConfig(model=arch, pretrained=False), 21)

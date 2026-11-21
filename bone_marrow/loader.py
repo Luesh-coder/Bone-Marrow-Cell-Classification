@@ -10,8 +10,8 @@ Why not torch's DataLoader? On this machine (Windows, torch 2.14, Python 3.15):
 These workers import only numpy, PIL and `datasets` (~0.15 GB each, measured)
 and return numpy arrays; engine.py makes tensors on the main process.
 
-Keep this module free of torch imports. Entry scripts (train.py, tune.py,
-evaluate.py, check_images.py) keep heavy imports inside functions, because on
+Keep this module free of torch imports. Entry scripts (scripts/*.py,
+tools/check_images.py) keep heavy imports inside functions, because on
 Windows every worker re-runs the top level of the main script ("spawn").
 
     loader = BatchLoader(dataset, batch_size=64, shuffle=True, num_workers=8)

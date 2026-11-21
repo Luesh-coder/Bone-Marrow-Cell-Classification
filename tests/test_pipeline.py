@@ -9,13 +9,13 @@ import torch
 import torch.nn.functional as F
 from PIL import Image
 
-from config import TrainConfig, load_config
-from data import (CORRUPT_IMAGES, class_map, class_weights, collate, keep_indices, make_sampler,
-                  stratified_indices)
-from engine import FocalLoss, lr_factor
-from metrics import compute_metrics
-from models import build_model, count_params, freeze_bn_stats, param_groups
-from preprocess import AUG_PRESETS, augment, normalize, preprocess_image, resize_uint8, transform
+from bone_marrow.config import TrainConfig, load_config
+from bone_marrow.data import (CORRUPT_IMAGES, class_map, class_weights, collate, keep_indices,
+                              make_sampler, stratified_indices)
+from bone_marrow.engine import FocalLoss, lr_factor
+from bone_marrow.metrics import compute_metrics
+from bone_marrow.models import build_model, count_params, freeze_bn_stats, param_groups
+from bone_marrow.preprocess import AUG_PRESETS, augment, normalize, preprocess_image, resize_uint8, transform
 
 
 @pytest.fixture
@@ -123,8 +123,8 @@ def _tiny_dataset(n=10, size=40):
 
 
 def test_batch_loader_in_process():
-    from loader import BatchLoader
-    from preprocess import with_preprocessing
+    from bone_marrow.loader import BatchLoader
+    from bone_marrow.preprocess import with_preprocessing
     d = with_preprocessing(_tiny_dataset(10), train=False, image_size=16, output="uint8")
     batches = list(BatchLoader(d, batch_size=4, num_workers=0))
     assert [len(y) for _, y in batches] == [4, 4, 2]
@@ -136,8 +136,8 @@ def test_batch_loader_in_process():
 
 
 def test_batch_loader_workers_match_and_skip_torch():
-    from loader import BatchLoader, _worker_has_torch
-    from preprocess import with_preprocessing
+    from bone_marrow.loader import BatchLoader, _worker_has_torch
+    from bone_marrow.preprocess import with_preprocessing
     d = with_preprocessing(_tiny_dataset(10), train=False, image_size=16, output="uint8")
     ref = list(BatchLoader(d, batch_size=4, num_workers=0))
     loader = BatchLoader(d, batch_size=4, num_workers=2)
@@ -150,6 +150,24 @@ def test_batch_loader_workers_match_and_skip_torch():
         assert loader._executor().submit(_worker_has_torch).result(timeout=60) is False
     finally:
         loader.close()
+
+
+@pytest.mark.parametrize("script", ["scripts/train.py", "scripts/tune.py", "scripts/evaluate.py",
+                                    "tools/check_images.py"])
+def test_entry_script_top_level_skips_torch(script, tmp_path):
+    # Spawned workers re-run the main script's top level as "__mp_main__" (so main()
+    # doesn't run). That must not import torch (~1 GB per worker). Running from
+    # tmp_path also checks the script's own sys.path line makes bone_marrow importable.
+    import subprocess
+    import sys
+    from pathlib import Path
+    path = Path(__file__).resolve().parents[1] / script
+    code = ("import runpy, sys; runpy.run_path(sys.argv[1], run_name='__mp_main__'); "
+            "print('torch' in sys.modules)")
+    out = subprocess.run([sys.executable, "-c", code, str(path)], cwd=tmp_path,
+                         capture_output=True, text=True, timeout=120)
+    assert out.returncode == 0, out.stderr
+    assert out.stdout.strip() == "False"
 
 
 # ------------------------------------------------------------------------- models

@@ -2,24 +2,29 @@
 Decode every image of every split and list the ones that cannot be decoded.
 
 A single corrupt JPEG crashes a loader worker and with it the whole training
-run, so known-bad rows are excluded via data.CORRUPT_IMAGES. This script is how
-that list was produced; re-run it if the dataset revision changes.
+run, so known-bad rows are excluded via bone_marrow.data.CORRUPT_IMAGES. This
+script is how that list was produced; re-run it if the dataset revision changes.
 
 Run (~20 s with 8 processes; reads the local Hugging Face cache):
-    python check_images.py
+    python tools/check_images.py
 """
 
 import io
 import os
+import sys
 import time
 from concurrent.futures import ProcessPoolExecutor
+from pathlib import Path
 
 os.environ.setdefault("OPENBLAS_NUM_THREADS", "1")
+# `python tools/check_images.py` puts tools/ on sys.path, not the repo root, so add
+# the root to make the bone_marrow package importable (workers inherit sys.path).
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from datasets import Image as HFImage, load_dataset
 from PIL import Image
 
-from preprocess import REPO_ID
+from bone_marrow.preprocess import REPO_ID
 
 SPLITS = ("train", "validation", "test")
 CHUNK = 4000
@@ -50,7 +55,7 @@ def scan(job):
 
 
 def main():
-    from data import CORRUPT_IMAGES   # imports torch; keep out of the workers
+    from bone_marrow.data import CORRUPT_IMAGES   # imports torch; keep out of the workers
 
     t = time.time()
     jobs = [(s, a, min(a + CHUNK, raw_split(s).num_rows))
@@ -66,7 +71,7 @@ def main():
             print(f"    row {idx:>6}  label {label:>2}  {problem}")
     listed = {s: tuple(sorted(i for i, _, _ in found[s])) for s in SPLITS if found[s]}
     print(f"\nScanned in {time.time() - t:.0f}s. Found: {listed}")
-    print("data.CORRUPT_IMAGES is", "up to date." if listed == CORRUPT_IMAGES else
+    print("bone_marrow.data.CORRUPT_IMAGES is", "up to date." if listed == CORRUPT_IMAGES else
           f"OUT OF DATE (currently {CORRUPT_IMAGES}); update it to the dict above.")
 
 

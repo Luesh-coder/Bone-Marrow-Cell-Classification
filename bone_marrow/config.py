@@ -4,7 +4,7 @@ tuning plan (slide 10) and imbalance options (slide 9), plus run settings.
 
 Configs live in YAML files (configs/*.yaml). Any field can be overridden from the
 command line with repeatable `--set key=value` flags, e.g.
-    python train.py --config configs/resnet50.yaml --set lr=1e-4 --set unfreeze=last_block
+    python scripts/train.py --config configs/resnet50.yaml --set lr=1e-4 --set unfreeze=last_block
 
 Values are converted to the field's type, so `lr=1e-4` is a float even though
 YAML on its own would read "1e-4" as a string.

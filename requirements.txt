@@ -6,6 +6,9 @@ torchvision==0.29.1
 
 # Everything else (from PyPI):
 #   pip install -r requirements.txt
+# PyYAML has no Python 3.15 wheel; without a C compiler (MSVC) its build fails, so
+# install it first as pure Python (PowerShell):
+#   $env:PYYAML_FORCE_LIBYAML = "0"; pip install pyyaml
 datasets>=5.1
 pillow
 numpy

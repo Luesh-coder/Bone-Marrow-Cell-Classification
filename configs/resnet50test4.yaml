@@ -1,0 +1,38 @@
+# resnet50test4: effective-number class weights
+# Tuning Plan A4 in results/resnet50_results.xlsx (priority: 1).
+#
+# Same as resnet50test1 except:
+#   class_weight_scheme: inv_sqrt -> effective_num
+#
+# Why:  Same precision/recall imbalance as test 3, but a gentler fix: about equal weights
+#       for classes above ~2,000 images, ~3.5x for BAS/HAC (vs ~8x with inv_sqrt), and
+#       similar weights for the rarest classes (Cui et al. 2019, beta = 0.999 fixed in
+#       data.py).
+# Compare its validation macro-F1 with test 1, not with the untuned run.
+#
+# bmenv\Scripts\python scripts/train.py --config configs/resnet50test4.yaml
+name: resnet50test4
+model: resnet50
+pretrained: true
+unfreeze: all            # head | last_block | all
+dropout: 0.3
+
+image_size: 224
+aug: medium
+
+epochs: 12               # from test 1 (was 20 in resnet50.yaml)
+patience: 12             # from test 1 (was 4 in resnet50.yaml)
+batch_size: 64
+optimizer: adamw
+lr: 3.0e-4
+backbone_lr_mult: 0.1
+weight_decay: 1.0e-4
+scheduler: cosine
+warmup_epochs: 1.0
+
+loss: weighted_ce
+class_weight_scheme: effective_num  # CHANGED (was inv_sqrt)
+sampler: none
+
+num_workers: 6           # from test 1 (was 12 in resnet50.yaml)
+seed: 42

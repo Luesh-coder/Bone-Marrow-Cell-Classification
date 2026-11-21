@@ -1,0 +1,42 @@
+# resnet50test1: let the cosine schedule finish
+# Tuning Plan A1 in results/resnet50_results.xlsx (priority: 1).
+#
+# Changed vs configs/resnet50.yaml (the untuned run, val macro-F1 0.7275):
+#   epochs: 20 -> 12
+#   patience: 4 -> 12
+#   num_workers: 12 -> 6
+#
+# Why:  The untuned run early-stopped at epoch 12 of 20 with the learning rate still at
+#       38% of its peak (best epoch 8), so it never reached the low-LR end of the cosine
+#       schedule. patience = epochs means no early stop before the schedule ends; best.pt
+#       still keeps the best epoch.
+# Note: num_workers 6 is a run setting, not a hyperparameter: it matches the untuned run
+#       (full speed at 6). This is the new reference: tests 2-16 each add one change on
+#       top of it.
+#
+# bmenv\Scripts\python scripts/train.py --config configs/resnet50test1.yaml
+name: resnet50test1
+model: resnet50
+pretrained: true
+unfreeze: all            # head | last_block | all
+dropout: 0.3
+
+image_size: 224
+aug: medium
+
+epochs: 12               # CHANGED (was 20)
+patience: 12             # CHANGED (was 4)
+batch_size: 64
+optimizer: adamw
+lr: 3.0e-4
+backbone_lr_mult: 0.1
+weight_decay: 1.0e-4
+scheduler: cosine
+warmup_epochs: 1.0
+
+loss: weighted_ce
+class_weight_scheme: inv_sqrt
+sampler: none
+
+num_workers: 6           # CHANGED (was 12)
+seed: 42

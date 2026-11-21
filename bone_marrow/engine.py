@@ -1,5 +1,5 @@
 """
-Training engine shared by train.py, tune.py and evaluate.py.
+Training engine shared by scripts/train.py, tune.py and evaluate.py.
 
     build_loss        cross-entropy, class-weighted cross-entropy, or focal loss
     build_optimizer   AdamW or SGD (momentum 0.9, Nesterov) over param groups
@@ -31,10 +31,10 @@ import torch.nn.functional as F
 from torch import nn
 from tqdm.auto import tqdm
 
-from data import build_data, check_worker_memory, class_weights, make_loader, make_sampler
-from metrics import compute_metrics, plot_history, save_metrics, summary_line
-from models import build_model, count_params, freeze_bn_stats, param_groups
-from preprocess import normalize
+from .data import build_data, check_worker_memory, class_weights, make_loader, make_sampler
+from .metrics import compute_metrics, plot_history, save_metrics, summary_line
+from .models import build_model, count_params, freeze_bn_stats, param_groups
+from .preprocess import normalize
 
 
 # --------------------------------------------------------------------------- losses
